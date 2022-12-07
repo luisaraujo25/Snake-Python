@@ -15,13 +15,13 @@ def displayCherry(window, pos, radius):
 
 def check_boundaries(snakePosX, snakePosY, noCells, cellSize, direction):
     
-    if snakePosX <= 0 and direction == "left":
+    if snakePosX < 0:
         snakePosX = noCells * cellSize
-    elif snakePosX >= noCells * cellSize and direction == "right":
+    elif snakePosX >= noCells * cellSize:
         snakePosX = 0
-    elif snakePosY <= 0 and direction == "up":
+    elif snakePosY < 0:
         snakePosY = noCells * cellSize
-    elif snakePosY >= noCells * cellSize and direction == "down":
+    elif snakePosY >= noCells * cellSize:
         snakePosY = 0
 
     return (snakePosX, snakePosY)
@@ -91,7 +91,9 @@ def main():
     backgroundColour = (255,255,255)
     clock = pg.time.Clock()
 
-
+    mana = pg.image.load('mana.png')
+    mana = pg.transform.scale(mana, (20, 25))
+    
     white = (255,255,255)
     green = (0,200,0)
 
@@ -112,6 +114,11 @@ def main():
 
     while(1):
         
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.display.quit()
+                quit()
+
         clock.tick(FPS)
         window.fill(backgroundColour)
 
@@ -131,17 +138,20 @@ def main():
 
         # Draw everything
         displayCherry(window, cherryPos, cherryRadius)
+        #window.blit(mana, (snakePosX, snakePosY))
         pg.draw.circle(window, green, (snakePosX + radius, snakePosY + radius), radius)
         draw_body(green, direction, radius, snakeBody, cellSize, window)
 
         # Check if game over -> snake head collides with body
         if check_collision([snakePosX, snakePosY], snakeBody) != -1:
+            pygame.display.quit()
             quit()
 
         # Check if the player wins !!!
         noCellsTotal = noCells ** 2 
         if len(snakeBody) + 1 == noCellsTotal:
-            quit() 
+            pygame.display.quit()
+            quit()
 
         # Check if the snake eats the cherry
         if (snakePosX, snakePosY) == cherryPos:
