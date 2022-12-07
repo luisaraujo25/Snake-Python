@@ -74,6 +74,13 @@ def draw_body(colour, direction, radius, snakeBody, cellSize, window):
     for pos in snakeBody:  
         pg.draw.circle(window, colour, (pos[0] + radius, pos[1] + radius), radius)
 
+def check_collision(head, snakeBody):
+
+    for body in snakeBody:
+        if head == body:
+            return 0
+    return -1 
+
 def main():
 
     #width, height
@@ -121,11 +128,20 @@ def main():
         
         # Check if snake position needs to be changed
         (snakePosX, snakePosY) = check_boundaries(snakePosX, snakePosY, noCells, cellSize, direction)
-        
+
         # Draw everything
         displayCherry(window, cherryPos, cherryRadius)
         pg.draw.circle(window, green, (snakePosX + radius, snakePosY + radius), radius)
         draw_body(green, direction, radius, snakeBody, cellSize, window)
+
+        # Check if game over -> snake head collides with body
+        if check_collision([snakePosX, snakePosY], snakeBody) != -1:
+            quit()
+
+        # Check if the player wins !!!
+        noCellsTotal = noCells ** 2 
+        if len(snakeBody) + 1 == noCellsTotal:
+            quit() 
 
         # Check if the snake eats the cherry
         if (snakePosX, snakePosY) == cherryPos:
@@ -135,4 +151,5 @@ def main():
         pg.event.pump()
         pg.display.flip()
 
-main()
+if __name__ == "__main__":
+    main()
