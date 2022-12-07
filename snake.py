@@ -41,40 +41,38 @@ def check_key(direction):
 
     return direction
 
-def move_snake(direction, snakePosX, snakePosY, cellSize):
+def move_snake(direction, snakePosX, snakePosY, cellSize, snakeBody):
+
+    auxX = snakePosX
+    auxY = snakePosY
+
+    moveX = 0
+    moveY = 0
 
     if direction == "up":
-        snakePosY -= cellSize 
+        snakePosY -= cellSize
+        moveY = -1
     elif direction == "down":
         snakePosY += cellSize
+        moveY = 1
     elif direction == "left":
         snakePosX -= cellSize
+        moveX = -1
     elif direction == "right":
         snakePosX += cellSize
+        moveX = 1
 
-    return (snakePosX, snakePosY)
+    for index in range(len(snakeBody)):
+        [nextX, nextY] = snakeBody[index]
+        snakeBody[index] = [auxX, auxY]
+        [auxX, auxY] = [nextX, nextY]
 
-def draw_snake(window, colour, snakePosX, snakePosY, direction, radius, snakeBody, cellSize):
+    return [(snakePosX, snakePosY), snakeBody]
 
-    pg.draw.circle(window, colour, (snakePosX + radius, snakePosY + radius), radius)
-
-    posX, posY = snakePosX, snakePosY
+def draw_body(colour, direction, radius, snakeBody, cellSize, window):
     
-    for i in range(snakeBody):        
-
-        if direction == "up":
-            posY += cellSize
-        elif direction == "down":
-            posY -= cellSize
-        elif direction == "left":
-            posX += cellSize 
-        elif direction == "right":
-            posX -= cellSize
-        
-        pg.draw.circle(window, colour, (posX + radius, posY + radius), radius)
-
-
-    return (posX, posY)
+    for pos in snakeBody:  
+        pg.draw.circle(window, colour, (pos[0] + radius, pos[1] + radius), radius)
 
 def main():
 
@@ -84,57 +82,54 @@ def main():
     dimensions = (x, y)
     window = pg.display.set_mode(dimensions)
     backgroundColour = (255,255,255)
-    window.fill(backgroundColour)
+    clock = pg.time.Clock()
+
+
+    white = (255,255,255)
+    green = (0,200,0)
 
     cellSize = 25 
     noCells = dimensions[0] / cellSize
     #noCells = 20 rn
-
-    green = (0,200,0)
     radius = cellSize / 2
     snakePosX = 0
     snakePosY = 0
-    direction = "right"
-
-    FPS = 8
-    clock = pg.time.Clock()
-
     cherryRadius = radius
+    direction = "right"
+    FPS = 8
+    cherry = False
+    snakeBody = []
+    posX, posY = 0, 0
 
     random.seed()
-    white = (255,255,255)
-    cherry = False
-
-    snakeBody = 0
-
-    posX, posY = 0, 0
 
     while(1):
         
         clock.tick(FPS)
-        pg.draw.circle(window, white, (posX + radius, posY + radius), radius)
+        window.fill(backgroundColour)
 
         # See if there is the need to generate a new cherry
         if cherry == False:
             cherryPos = cherryGenerator(noCells, cellSize, cherryRadius)
-            displayCherry(window, cherryPos, cherryRadius)
             cherry = True
 
         # Check if any key was pressed and, if so, determine a new direction
         direction = check_key(direction)
 
         # Update snake position
-        (snakePosX, snakePosY) = move_snake(direction, snakePosX, snakePosY, cellSize)
+        [(snakePosX, snakePosY), snakeBody] = move_snake(direction, snakePosX, snakePosY, cellSize, snakeBody)
         
         # Check if snake position needs to be changed
         (snakePosX, snakePosY) = check_boundaries(snakePosX, snakePosY, noCells, cellSize, direction)
         
-        # Draw snake in the new position
-        (posX, posY) = draw_snake(window, green, snakePosX, snakePosY, direction, radius, snakeBody, cellSize)
+        # Draw everything
+        displayCherry(window, cherryPos, cherryRadius)
+        pg.draw.circle(window, green, (snakePosX + radius, snakePosY + radius), radius)
+        draw_body(green, direction, radius, snakeBody, cellSize, window)
 
         # Check if the snake eats the cherry
         if (snakePosX, snakePosY) == cherryPos:
-            snakeBody += 1
+            snakeBody.append([snakePosX, snakePosY])
             cherry = False
             
         pg.event.pump()
